@@ -10,7 +10,8 @@ router.post("/create", async (req, res) => {
         const newAnimal = await Animal.create({
             name,
             legNumber,
-            predator
+            predator,
+            user_id: req.user.id
         });
 
         res.status(201).json({
@@ -22,9 +23,9 @@ router.post("/create", async (req, res) => {
     }
 });
 
-router.get("/", async (req, res) => {
+router.get("/", validateJWT, async (req, res) => {
     try {
-        const allAnimals = await Animal.findAll();
+        const allAnimals = await Animal.findAll({where: { user_id: req.user.id} });
         res.status(200).json(
             allAnimals
         )
@@ -33,7 +34,7 @@ router.get("/", async (req, res) => {
     }
 });
 
-router.delete("/delete/:name", async (req, res) => {
+router.delete("/delete/:name", validateJWT, async (req, res) => {
     //or to do it by Id...
     //const animalId = req.params.id;
     //await Animal.destroy({ where: {id: animalId}})
@@ -50,6 +51,7 @@ router.delete("/delete/:name", async (req, res) => {
             const query = {
                 where: {
                     id: animal.id,
+                    user_id: req.user.id
                 },
             };
 
@@ -69,12 +71,13 @@ router.delete("/delete/:name", async (req, res) => {
     }
 });
 
-router.put("/update/:id", async (req, res) => {
+router.put("/update/:id", validateJWT, async (req, res) => {
     const { name, legNumber, predator } = req.body.animal;
 
     const query = {
         where: {
-            id: req.params.id
+            id: req.params.id,
+            user_id: req.user.id
         }
     };
 
